@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -204,12 +205,12 @@ const Assessments = () => {
                       {marks >= 90 
                         ? 'Excellent' 
                         : marks >= 80 
-                          ? 'Very Good'
-                          : marks >= 70 
-                            ? 'Good'
-                            : marks >= 60 
-                              ? 'Satisfactory' 
-                              : 'Needs Improvement'}
+                        ? 'Very Good'
+                        : marks >= 70 
+                        ? 'Good'
+                        : marks >= 60 
+                        ? 'Satisfactory' 
+                        : 'Needs Improvement'}
                     </TableCell>
                   </TableRow>
                 );
