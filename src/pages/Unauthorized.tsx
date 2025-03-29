@@ -2,10 +2,12 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Home } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Unauthorized = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -21,18 +23,30 @@ const Unauthorized = () => {
         </p>
         <div className="flex flex-col gap-2">
           <Button 
-            onClick={() => navigate('/dashboard')}
-            className="w-full"
+            onClick={() => navigate(user ? '/dashboard' : '/')}
+            className="w-full flex items-center justify-center"
           >
-            Back to Dashboard
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {user ? 'Back to Dashboard' : 'Back to Home'}
           </Button>
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/')}
-            className="w-full"
-          >
-            Back to Home
-          </Button>
+          {user && (
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/profile')}
+              className="w-full"
+            >
+              View Your Profile
+            </Button>
+          )}
+          {!user && (
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/login')}
+              className="w-full"
+            >
+              Log In
+            </Button>
+          )}
         </div>
       </div>
     </div>
