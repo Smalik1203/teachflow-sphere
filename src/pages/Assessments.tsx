@@ -66,7 +66,8 @@ const Assessments = () => {
               </SelectTrigger>
               <SelectContent>
                 {classes.map(cls => (
-                  <SelectItem key={cls.id} value={cls.id}>
+                  // Ensure each SelectItem has a non-empty string value
+                  <SelectItem key={cls.id} value={cls.id || "default_class"}>
                     {cls.name}
                   </SelectItem>
                 ))}
@@ -81,7 +82,8 @@ const Assessments = () => {
               </SelectTrigger>
               <SelectContent>
                 {subjects.map(subject => (
-                  <SelectItem key={subject.id} value={subject.id}>
+                  // Ensure each SelectItem has a non-empty string value
+                  <SelectItem key={subject.id} value={subject.id || "default_subject"}>
                     {subject.name}
                   </SelectItem>
                 ))}
@@ -280,7 +282,8 @@ const Assessments = () => {
               </SelectTrigger>
               <SelectContent>
                 {classes.map(cls => (
-                  <SelectItem key={cls.id} value={cls.id}>
+                  // Ensure each SelectItem has a non-empty string value
+                  <SelectItem key={cls.id} value={cls.id || "default_class"}>
                     {cls.name}
                   </SelectItem>
                 ))}
@@ -295,7 +298,8 @@ const Assessments = () => {
               </SelectTrigger>
               <SelectContent>
                 {subjects.map(subject => (
-                  <SelectItem key={subject.id} value={subject.id}>
+                  // Ensure each SelectItem has a non-empty string value
+                  <SelectItem key={subject.id} value={subject.id || "default_subject"}>
                     {subject.name}
                   </SelectItem>
                 ))}
