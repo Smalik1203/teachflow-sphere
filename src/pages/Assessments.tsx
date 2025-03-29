@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,7 +13,6 @@ const Assessments = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedStudent, setSelectedStudent] = useState<string>('');
   
-  // Mock data - would be fetched from API in a real application
   const classes = [
     { id: 'class1', name: 'Class 6A' },
     { id: 'class2', name: 'Class 7B' },
@@ -203,10 +201,15 @@ const Assessments = () => {
                     <TableCell>{marks}/100</TableCell>
                     <TableCell>{grade}</TableCell>
                     <TableCell>
-                      {marks >= 90 ? 'Excellent' : 
-                       marks >= 80 ? 'Very Good' :
-                       marks >= 70 ? 'Good' :
-                       marks >= 60 ? 'Satisfactory' : 'Needs Improvement'}
+                      {marks >= 90 
+                        ? 'Excellent' 
+                        : marks >= 80 
+                          ? 'Very Good'
+                          : marks >= 70 
+                            ? 'Good'
+                            : marks >= 60 
+                              ? 'Satisfactory' 
+                              : 'Needs Improvement'}
                     </TableCell>
                   </TableRow>
                 );
