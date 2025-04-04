@@ -7,14 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { Book } from 'lucide-react';
+import { Book, Info } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const { login, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showExamples, setShowExamples] = useState(false);
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -42,12 +45,18 @@ const Login = () => {
     }
   };
 
-  // Mock user credentials for development
+  // User credentials examples for different roles
   const loginExamples = [
-    { role: 'Super Admin', email: 'admin@example.com', password: 'password' },
-    { role: 'School Admin', email: 'school@example.com', password: 'password' },
-    { role: 'Teacher', email: 'teacher@example.com', password: 'password' },
-    { role: 'Student', email: 'student@example.com', password: 'password' }
+    { role: 'Super Admin', email: 'admin@example.com', password: 'password123', description: 'Full system access' },
+    { role: 'School Admin', email: 'admin.riverside@example.com', password: 'password123', description: 'Manage Riverside Academy' },
+    { role: 'School Admin', email: 'admin.highland@example.com', password: 'password123', description: 'Manage Highland High School' },
+    { role: 'School Admin', email: 'admin.oceanside@example.com', password: 'password123', description: 'Manage Oceanside College' },
+    { role: 'Teacher', email: 'teacher1.riverside@example.com', password: 'password123', description: 'Teacher at Riverside Academy' },
+    { role: 'Teacher', email: 'teacher1.highland@example.com', password: 'password123', description: 'Teacher at Highland High School' },
+    { role: 'Teacher', email: 'teacher1.oceanside@example.com', password: 'password123', description: 'Teacher at Oceanside College' },
+    { role: 'Student', email: 'student1.riverside@example.com', password: 'password123', description: 'Student at Riverside Academy' },
+    { role: 'Student', email: 'student1.highland@example.com', password: 'password123', description: 'Student at Highland High School' },
+    { role: 'Student', email: 'student1.oceanside@example.com', password: 'password123', description: 'Student at Oceanside College' }
   ];
 
   return (
@@ -95,6 +104,19 @@ const Login = () => {
                     required
                   />
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <label
+                    htmlFor="remember"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Remember me
+                  </label>
+                </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
@@ -106,12 +128,24 @@ const Login = () => {
               Don't have an account? <a href="#" className="text-primary hover:underline">Create account</a>
             </div>
             
-            {/* Development mode shortcuts - remove in production */}
+            {/* Development mode information */}
             {process.env.NODE_ENV !== 'production' && (
-              <div className="border-t pt-4">
-                <p className="text-xs text-muted-foreground mb-2 text-center">Development Login Examples</p>
+              <div className="border-t pt-4 w-full">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-sm text-muted-foreground">Development Login Examples</p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowExamples(!showExamples)}
+                    className="h-8 px-2"
+                  >
+                    <Info className="h-4 w-4 mr-1" />
+                    {showExamples ? "Hide" : "Show"} all
+                  </Button>
+                </div>
+                
                 <div className="grid gap-2">
-                  {loginExamples.map((example, index) => (
+                  {(showExamples ? loginExamples : loginExamples.slice(0, 4)).map((example, index) => (
                     <div 
                       key={index} 
                       className="text-xs p-2 bg-muted rounded flex justify-between items-center cursor-pointer hover:bg-muted/80"
@@ -120,10 +154,20 @@ const Login = () => {
                         setPassword(example.password);
                       }}
                     >
-                      <span className="font-semibold">{example.role}:</span>
-                      <span>{example.email}</span>
+                      <div>
+                        <span className="font-semibold">{example.role}:</span>
+                        <span className="ml-1">{example.email}</span>
+                      </div>
+                      <span className="text-muted-foreground text-xs hidden sm:inline">{example.description}</span>
                     </div>
                   ))}
+                </div>
+                
+                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950 rounded-md border border-amber-200 dark:border-amber-800">
+                  <p className="text-xs text-amber-800 dark:text-amber-300">
+                    <strong>Note:</strong> To create real user accounts, register them through the Supabase Auth UI. 
+                    For development, you might need to disable email verification in Supabase.
+                  </p>
                 </div>
               </div>
             )}
