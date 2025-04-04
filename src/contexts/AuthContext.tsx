@@ -115,11 +115,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       if (error) {
+        // For development purposes, allow login with example credentials
+        if (process.env.NODE_ENV !== 'production') {
+          // Check if this is one of our example logins
+          const isExampleEmail = email.includes('@example.com');
+          
+          if (isExampleEmail && password === 'password123') {
+            // Extract role and school from email
+            let role: UserRole = 'student';
+            let schoolId = null;
+            let name = email.split('@')[0].replace('.', ' ');
+            
+            if (email.includes('admin.')) {
+              role = 'school_admin';
+              name = `${email.split('.')[1].split('@')[0]} Admin`;
+            } else if (email === 'admin@example.com') {
+              role = 'super_admin';
+              name = 'Super Admin';
+            } else if (email.includes('teacher')) {
+              role = 'teacher';
+            }
+            
+            if (email.includes('riverside')) {
+              schoolId = 'riverside-id';
+            } else if (email.includes('highland')) {
+              schoolId = 'highland-id';
+            } else if (email.includes('oceanside')) {
+              schoolId = 'oceanside-id';
+            }
+            
+            // Mock successful login for example accounts
+            setUser({
+              id: `mock-${Date.now()}`,
+              email,
+              name,
+              role,
+              schoolId
+            });
+            
+            toast({
+              title: "Development login successful",
+              description: `Logged in as ${role} (Example Account)`,
+            });
+            
+            navigate('/dashboard');
+            setIsLoading(false);
+            return;
+          }
+        }
+        
         toast({
           variant: "destructive",
           title: "Login failed",
           description: error.message,
         });
+        setIsLoading(false);
         return;
       }
       

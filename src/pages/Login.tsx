@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { Book, Info } from 'lucide-react';
+import { Book, Info, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const Login = () => {
@@ -43,6 +43,16 @@ const Login = () => {
     } catch (error) {
       console.error('Login submission error:', error);
     }
+  };
+
+  const handleExampleLogin = (exampleEmail: string) => {
+    setEmail(exampleEmail);
+    setPassword('password123');
+    
+    toast({
+      title: "Example credentials filled",
+      description: "Click Login to continue with these example credentials.",
+    });
   };
 
   // User credentials examples for different roles
@@ -128,49 +138,64 @@ const Login = () => {
               Don't have an account? <a href="#" className="text-primary hover:underline">Create account</a>
             </div>
             
-            {/* Development mode information */}
-            {process.env.NODE_ENV !== 'production' && (
-              <div className="border-t pt-4 w-full">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="text-sm text-muted-foreground">Development Login Examples</p>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setShowExamples(!showExamples)}
-                    className="h-8 px-2"
-                  >
-                    <Info className="h-4 w-4 mr-1" />
-                    {showExamples ? "Hide" : "Show"} all
-                  </Button>
+            {/* Development mode examples box */}
+            <div className="border-t pt-4 w-full">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-1">
+                  <Info className="h-4 w-4 text-amber-500" />
+                  <p className="text-sm font-medium">Development Login Examples</p>
                 </div>
-                
-                <div className="grid gap-2">
-                  {(showExamples ? loginExamples : loginExamples.slice(0, 4)).map((example, index) => (
-                    <div 
-                      key={index} 
-                      className="text-xs p-2 bg-muted rounded flex justify-between items-center cursor-pointer hover:bg-muted/80"
-                      onClick={() => {
-                        setEmail(example.email);
-                        setPassword(example.password);
-                      }}
-                    >
-                      <div>
-                        <span className="font-semibold">{example.role}:</span>
-                        <span className="ml-1">{example.email}</span>
-                      </div>
-                      <span className="text-muted-foreground text-xs hidden sm:inline">{example.description}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950 rounded-md border border-amber-200 dark:border-amber-800">
-                  <p className="text-xs text-amber-800 dark:text-amber-300">
-                    <strong>Note:</strong> To create real user accounts, register them through the Supabase Auth UI. 
-                    For development, you might need to disable email verification in Supabase.
-                  </p>
-                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowExamples(!showExamples)}
+                  className="h-8 px-2"
+                >
+                  {showExamples ? "Hide" : "Show"} all
+                </Button>
               </div>
-            )}
+              
+              <div className="grid gap-2">
+                {(showExamples ? loginExamples : loginExamples.slice(0, 4)).map((example, index) => (
+                  <div 
+                    key={index} 
+                    className="text-xs p-2 bg-muted rounded flex justify-between items-center cursor-pointer hover:bg-muted/80 group"
+                    onClick={() => handleExampleLogin(example.email)}
+                  >
+                    <div className="flex-1">
+                      <span className="font-semibold">{example.role}:</span>
+                      <span className="ml-1">{example.email}</span>
+                    </div>
+                    <div className="hidden md:flex items-center gap-2">
+                      <span className="text-muted-foreground text-xs">{example.description}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(example.email);
+                          toast({
+                            title: "Copied to clipboard",
+                            description: `${example.email} copied to clipboard`,
+                          });
+                        }}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950 rounded-md border border-amber-200 dark:border-amber-800">
+                <p className="text-xs text-amber-800 dark:text-amber-300">
+                  <strong>Note:</strong> For development purposes, you can use these example credentials with the 
+                  password <strong>password123</strong>. In production, you'll need to create real user accounts through 
+                  Supabase Auth UI.
+                </p>
+              </div>
+            </div>
           </CardFooter>
         </Card>
       </div>
