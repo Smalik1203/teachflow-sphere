@@ -3,12 +3,14 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { User, UserRole } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (userId: string, password: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   checkAccess: (allowedRoles: UserRole[]) => boolean;
 }
@@ -17,18 +19,78 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        if (session?.user) {
+          // Fetch user profile data
+          setTimeout(async () => {
+            try {
+              const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+                
+              if (error) {
+                console.error('Error fetching user profile:', error);
+                return;
+              }
+              
+              if (data) {
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email || '',
+                  name: data.name || '',
+                  role: data.role as UserRole,
+                  schoolId: data.school_id
+                });
+              }
+            } catch (error) {
+              console.error('Error in profile fetch:', error);
+            }
+          }, 0);
+        } else {
+          setUser(null);
+        }
+      }
+    );
+    
     // Check for existing session
     const checkSession = async () => {
       try {
-        // Mock implementation - in real app, check with Supabase
-        const storedUser = localStorage.getItem('educationUser');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        
+        if (session?.user) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            setIsLoading(false);
+            return;
+          }
+          
+          if (data) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: data.name || '',
+              role: data.role as UserRole,
+              schoolId: data.school_id
+            });
+          }
         }
       } catch (error) {
         console.error('Session check failed:', error);
@@ -38,100 +100,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     checkSession();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (userId: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Mock login - in real app, use Supabase auth
-      // This is just for demonstration
-      if (userId === 'admin' && password === 'password') {
-        const mockUser: User = {
-          id: '1',
-          email: 'admin@example.com',
-          name: 'Super Admin',
-          role: 'super_admin'
-        };
-        setUser(mockUser);
-        localStorage.setItem('educationUser', JSON.stringify(mockUser));
-        toast({
-          title: "Login successful",
-          description: "Welcome to the Education Management System",
-        });
-        navigate('/dashboard');
-      } else if (userId === 'school' && password === 'password') {
-        const mockUser: User = {
-          id: '2',
-          email: 'school@example.com',
-          name: 'School Admin',
-          role: 'school_admin',
-          schoolId: '1'
-        };
-        setUser(mockUser);
-        localStorage.setItem('educationUser', JSON.stringify(mockUser));
-        toast({
-          title: "Login successful",
-          description: "Welcome to the Education Management System",
-        });
-        navigate('/dashboard');
-      } else if (userId === 'teacher' && password === 'password') {
-        const mockUser: User = {
-          id: '3',
-          email: 'teacher@example.com',
-          name: 'Teacher User',
-          role: 'teacher',
-          schoolId: '1'
-        };
-        setUser(mockUser);
-        localStorage.setItem('educationUser', JSON.stringify(mockUser));
-        toast({
-          title: "Login successful",
-          description: "Welcome to the Education Management System",
-        });
-        navigate('/dashboard');
-      } else if (userId === 'student' && password === 'password') {
-        const mockUser: User = {
-          id: '4',
-          email: 'student@example.com',
-          name: 'Student User',
-          role: 'student',
-          schoolId: '1'
-        };
-        setUser(mockUser);
-        localStorage.setItem('educationUser', JSON.stringify(mockUser));
-        toast({
-          title: "Login successful",
-          description: "Welcome to the Education Management System",
-        });
-        navigate('/dashboard');
-      } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
         toast({
           variant: "destructive",
           title: "Login failed",
-          description: "Invalid credentials. Please try again.",
+          description: error.message,
         });
+        return;
       }
-    } catch (error) {
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome to the Education Management System",
+      });
+      navigate('/dashboard');
+    } catch (error: any) {
       console.error('Login error:', error);
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: "An error occurred during login.",
+        description: error.message || "An error occurred during login.",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    // In real app, sign out from Supabase
-    localStorage.removeItem('educationUser');
-    setUser(null);
-    navigate('/login');
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      navigate('/login');
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: "An error occurred during logout.",
+      });
+    }
   };
 
   const checkAccess = (allowedRoles: UserRole[]): boolean => {
