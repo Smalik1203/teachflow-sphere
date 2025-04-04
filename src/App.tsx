@@ -15,7 +15,6 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Attendance from "@/pages/Attendance";
 import Fees from "@/pages/Fees";
-import Assessments from "@/pages/Assessments";
 import Resources from "@/pages/Resources";
 import Quizzes from "@/pages/Quizzes";
 import Profile from "@/pages/Profile";
@@ -66,17 +65,6 @@ const App = () => (
                   <RouteGuard allowedRoles={['super_admin', 'school_admin', 'student']}>
                     <Layout>
                       <Fees />
-                    </Layout>
-                  </RouteGuard>
-                }
-              />
-              
-              <Route 
-                path="/assessments" 
-                element={
-                  <RouteGuard>
-                    <Layout>
-                      <Assessments />
                     </Layout>
                   </RouteGuard>
                 }
